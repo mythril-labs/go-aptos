@@ -6,6 +6,10 @@ type GetAccountResourcesQueryParams struct {
 	Start         string
 }
 
+type GetAccountResourceQueryParams struct {
+	LedgerVersion uint64
+}
+
 type ErrorResponse struct {
 	Message     string `json:"message"`
 	ErrorCode   string `json:"error_code"`

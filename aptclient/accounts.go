@@ -19,6 +19,10 @@ func (c *Client) GetAccountResources(
 ) ([]types.Resource, *Metadata, error) {
 	req := c.client.R().SetContext(ctx).SetPathParam("address", address)
 
+	if queryParams.LedgerVersion > 0 {
+		req.SetQueryParam("ledger_version", strconv.FormatUint(queryParams.LedgerVersion, 64))
+	}
+
 	if queryParams.Limit > 0 {
 		req.SetQueryParam("limit", strconv.Itoa(queryParams.Limit))
 	}
@@ -40,4 +44,33 @@ func (c *Client) GetAccountResources(
 	}
 
 	return resources, handleRspHdr(resp.Header()), nil
+}
+
+func (c *Client) GetAccountResource(
+	ctx context.Context,
+	address string,
+	resourceType string,
+	queryParams GetAccountResourceQueryParams,
+) (*types.Resource, *Metadata, error) {
+	req := c.client.R().SetContext(ctx).
+		SetPathParam("address", address).
+		SetPathParam("resource_type", resourceType)
+
+	if queryParams.LedgerVersion > 0 {
+		req.SetQueryParam("ledger_version", strconv.FormatUint(queryParams.LedgerVersion, 64))
+	}
+
+	var resource types.Resource
+	req.SetResult(&resource)
+
+	resp, err := req.Get(pathGetAccountResource)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if resp.IsError() {
+		return nil, nil, handleErrResp(resp.Body())
+	}
+
+	return &resource, handleRspHdr(resp.Header()), nil
 }
